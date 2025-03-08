@@ -1,5 +1,6 @@
 import React from 'react';
 
+// this defines the task structure with optional id
 interface Task {
   id?: number;
   task: string;
@@ -9,7 +10,10 @@ interface Task {
   color: string;
 }
 
+// here we set up the sticky note component
 const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fetchTasks }) => {
+
+  // this formats dates for display
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -17,6 +21,7 @@ const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fe
     return `${month}/${day}`;
   };
 
+  // next we update a task’s status on the server
   const updateTask = async (id: number | undefined, updates: Partial<Task>) => {
     await fetch(`http://localhost:3000/tasks/${id}`, {
       method: 'PATCH',
@@ -26,6 +31,7 @@ const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fe
     fetchTasks();
   };
 
+  // this helps to delete a task from the server
   const deleteTask = async (id: number | undefined) => {
     await fetch(`http://localhost:3000/tasks/${id}`, {
       method: 'DELETE',
@@ -33,6 +39,7 @@ const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fe
     fetchTasks();
   };
 
+  // finally, this renders the sticky note with buttons
   return (
     <div className={`sticky-note ${task.color} fade-in col-md-4`} data-id={task.id}>
       <div className="note-content p-2">
@@ -43,13 +50,13 @@ const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fe
               className="btn btn-sm btn-success complete-btn me-1"
               onClick={() => !task.completed && updateTask(task.id, { completed: true })}
             >
-            ✓ 
+              ✓ 
             </button>
             <button
               className="btn btn-sm btn-danger delete-btn"
               onClick={() => deleteTask(task.id)}
             >
-            ✗ 
+              ✗ 
             </button>
           </div>
         </div>

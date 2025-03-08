@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
+// this defines the task structure with optional id for the db file
 interface Task {
   id?: number;
   task: string;
@@ -10,9 +11,13 @@ interface Task {
   color: string;
 }
 
+// here we set up the color options for sticky notes
 const colors = ['color-1', 'color-2', 'color-3'];
 
+// this is the main app component
 const App: React.FC = () => {
+
+  // this sets up state for tasks, colors, and form inputs
   const [tasks, setTasks] = useState<Task[]>([]);
   const [colorIndex, setColorIndex] = useState<number>(() => parseInt(localStorage.getItem('colorIndex') || '0'));
   const [newTask, setNewTask] = useState<string>('');
@@ -20,11 +25,12 @@ const App: React.FC = () => {
   const [endDate, setEndDate] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('start');
 
-  // Fetch tasks on mount and when sort changes
+  // this fetches tasks on mount and when sort changes
   useEffect(() => {
     fetchTasks();
   }, [sortBy]);
 
+  // here we fetch tasks from the server with sorting
   const fetchTasks = async () => {
     const sortField = sortBy === 'complete' ? 'completed' : sortBy;
     const response = await fetch(`http://localhost:3000/tasks?_sort=${sortField}&_order=asc`);
@@ -32,6 +38,7 @@ const App: React.FC = () => {
     setTasks(data);
   };
 
+  // this helps to create a new task and post it
   const createTask = async () => {
     if (newTask && startDate && endDate) {
       const task: Task = {
@@ -55,8 +62,11 @@ const App: React.FC = () => {
     }
   };
 
+  // next we make the form and task board
   return (
     <>
+
+      {/* this builds the form for adding new tasks */}
       <div id="form-container" className={`sticky-note mb-3 mx-auto ${colors[colorIndex]}`} style={{ width: '250px', height: '250px', zIndex: 100 }}>
         <div className="note-content p-2">
           <div className="d-flex justify-content-between">
@@ -97,6 +107,8 @@ const App: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* this adds the sorting menu */}
       <div className="mb-3 text-center">
         <select
           id="sort-notes"
@@ -109,17 +121,22 @@ const App: React.FC = () => {
           <option value="complete">Sort: Completed</option>
         </select>
       </div>
+
+      {/* this displays all tasks as sticky notes */}
       <div id="board" className="row">
         {tasks.map((task) => (
           <StickyNote key={task.id} task={task} fetchTasks={fetchTasks} />
         ))}
       </div>
+
     </>
   );
 };
 
-// Sticky Note Component
+// here is the sticky note component
 const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fetchTasks }) => {
+
+  // this formats date to mm/dd
   const formatDate = (dateStr: string) => {
     const date = new Date(dateStr);
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -127,6 +144,7 @@ const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fe
     return `${month}/${day}`;
   };
 
+  // here we update a task’s status on the server
   const updateTask = async (id: number | undefined, updates: Partial<Task>) => {
     await fetch(`http://localhost:3000/tasks/${id}`, {
       method: 'PATCH',
@@ -136,6 +154,7 @@ const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fe
     fetchTasks();
   };
 
+  // this removes a task from the server
   const deleteTask = async (id: number | undefined) => {
     await fetch(`http://localhost:3000/tasks/${id}`, {
       method: 'DELETE',
@@ -143,6 +162,7 @@ const StickyNote: React.FC<{ task: Task; fetchTasks: () => void }> = ({ task, fe
     fetchTasks();
   };
 
+  // lastly we form the single sticky note
   return (
     <div className={`sticky-note ${task.color} fade-in col-md-4`} data-id={task.id}>
       <div className="note-content p-2">
